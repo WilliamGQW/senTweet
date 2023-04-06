@@ -2,6 +2,7 @@ const languageDetectionApiUrl = 'http://18.191.212.35:8080/api/language-detectio
 const sentimentScoreApiUrl = 'http://18.191.212.35:8080/api/sentiment-score';
 const extension_id = 'bknbmbgfopkeimcbeenlcojcgcaeohbb';
 
+// Fetch language detection results for given tweets
 async function fetchLanguageDetection(tweets) {
   return new Promise((resolve, reject) => {
     chrome.runtime.sendMessage(
@@ -24,6 +25,7 @@ async function fetchLanguageDetection(tweets) {
   });
 }
 
+// Fetch sentiment scores for given English tweets
 async function fetchSentimentScore(englishTweets) {
   return new Promise((resolve, reject) => {
 
@@ -47,7 +49,7 @@ async function fetchSentimentScore(englishTweets) {
   });
 }
 
-
+// Extract tweets from the current DOM
 function extractTweets() {
   const tweetElements = document.querySelectorAll('[data-testid="tweetText"]');
   console.log(`tweetElements.length: ${tweetElements.length}`);
@@ -77,9 +79,9 @@ function extractTweets() {
 let analyzedTweetTexts = new Set();
 const detectedMoods = {}; // create an object to store the detected moods:
 
+// Analyze tweets for language and sentiment
 async function analyzeTweets() {
   const tweets = extractTweets();
-  console.log('Tweets:', tweets);
 
   // If no tweets are found, try again after a short delay
   if (tweets.length === 0) {
@@ -89,18 +91,15 @@ async function analyzeTweets() {
 
   // Filter out tweets that have already been analyzed
   const newTweets = tweets.filter(tweet => !analyzedTweetTexts.has(tweet.id));
-  console.log('New tweets:', newTweets);
+
   // Add new tweet IDs to the analyzedTweetTexts set
   newTweets.forEach(tweet => analyzedTweetTexts.add(tweet.id));
 
   const tweetTexts = newTweets.map(tweet => ({ tweet_text: tweet.tweet_text }));
 
-  console.log("calling fetchLanguageDetection....");
   console.log(`extracted Tweets: ${tweetTexts}`);
 
   const languageDetectionResults = await fetchLanguageDetection(tweetTexts);
-  console.log('Language detection results:', languageDetectionResults);
-
   const englishTweets = languageDetectionResults
     .filter(result => result.is_english)
     .map(result => ({ tweet_text: result.tweet_text }));
@@ -108,7 +107,6 @@ async function analyzeTweets() {
   console.log(`There are ${englishTweets.length} english tweets among ${languageDetectionResults.length} all tweets.`);
 
   const sentimentScores = await fetchSentimentScore(englishTweets);
-  console.log('Sentiment scores:', sentimentScores);
 
   sentimentScores.forEach(score => {
     const tweetData = tweets.find(tweet => tweet.tweet_text === score.tweet_text && !tweet.processed);
@@ -148,6 +146,7 @@ async function analyzeTweets() {
   });
 }
 
+// Handle scroll events to analyze tweets
 function handleScroll(callback) {
   let timer;
   const delay = 1000; // You can adjust the delay value as needed
@@ -158,6 +157,7 @@ function handleScroll(callback) {
   });
 }
 
+// Observe tweets and handle scroll down & up
 function observeTweets(callback) {
   const mainContentElement = document.querySelector('div[data-testid="primaryColumn"]');
 
@@ -189,9 +189,9 @@ function observeTweets(callback) {
   }
 }
 
-
+// Execute functions when the content is loaded
 function onContentLoaded() {
-  setTimeout(analyzeTweets, 2500); // Wait for 3 seconds before running analyzeTweets
+  setTimeout(analyzeTweets, 2500); // Wait for a few seconds before running analyzeTweets
   observeTweets(analyzeTweets);
   handleScroll(analyzeTweets);
 }
