@@ -1,0 +1,45 @@
+{
+  "manifest_version": 3,
+  "name": "Twitter Sentiment Analyzer",
+  "version": "1.0",
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "openai-16.png",
+      "48": "openai-48.png",
+      "128": "openai-128.png"
+    }
+  },
+  "permissions": [
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://twitter.com/"
+  ],
+  "externally_connectable": {
+    "matches": ["https://twitter.com/*"]
+  },
+  "icons": {
+    "16": "openai-16.png",
+    "48": "openai-48.png",
+    "128": "openai-128.png"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.twitter.com/*"
+      ],
+      "js": ["content.js"]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+        "resources": ["button.svg"],
+        "matches": ["https://twitter.com/*"]
+    }
+]
+}
