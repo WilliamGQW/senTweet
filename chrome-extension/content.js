@@ -49,10 +49,33 @@ async function fetchSentimentScore(englishTweets) {
 }
 
 
+// function extractTweets() {
+//   const tweetElements = document.querySelectorAll('[data-testid="tweetText"]');
+//   console.log(`tweetElements.length: ${tweetElements.length}`);
+
+
+//   const tweets = [];
+
+//   tweetElements.forEach(tweet => {
+//     if (tweet) {
+//       const tweetId = tweet.getAttribute('data-unique-id');
+
+//       if (tweetId) {
+//         tweets.push({ tweet_text: tweet.textContent, element: tweet, id: tweetId, detected_mood: detectedMoods[tweetId] });
+//       } else {
+//         const newTweetId = `tweet_${Date.now()}_${Math.random().toString(7)}`;
+//         tweet.setAttribute('data-unique-id', newTweetId);
+//         tweets.push({ tweet_text: tweet.textContent, element: tweet, id: newTweetId });
+//       }
+//     }
+//   });
+
+//   return tweets;
+// }
+
 function extractTweets() {
   const tweetElements = document.querySelectorAll('[data-testid="tweetText"]');
   console.log(`tweetElements.length: ${tweetElements.length}`);
-  
 
   const tweets = [];
 
@@ -61,7 +84,10 @@ function extractTweets() {
       const tweetId = tweet.getAttribute('data-unique-id');
 
       if (tweetId) {
-        tweets.push({ tweet_text: tweet.textContent, element: tweet, id: tweetId, detected_mood: detectedMoods[tweetId] });
+        const emojiElement = tweet.parentElement.querySelector(`span[data-unique-emoji-id="${tweetId}"]`);
+        if (!emojiElement) { // Only add the tweet if it doesn't already have an emoji
+          tweets.push({ tweet_text: tweet.textContent, element: tweet, id: tweetId, detected_mood: detectedMoods[tweetId] });
+        }
       } else {
         const newTweetId = `tweet_${Date.now()}_${Math.random().toString(7)}`;
         tweet.setAttribute('data-unique-id', newTweetId);
@@ -87,10 +113,10 @@ async function analyzeTweets() {
   }
 
   // Filter out tweets that have already been analyzed
-  const newTweets = tweets.filter(tweet => !analyzedTweetTexts.has(tweet.tweet_text));
+  const newTweets = tweets.filter(tweet => !analyzedTweetTexts.has(tweet.id));
   console.log('New tweets:', newTweets);
-  // Add new tweet texts to the analyzedTweetTexts set
-  newTweets.forEach(tweet => analyzedTweetTexts.add(tweet.tweet_text));
+  // Add new tweet IDs to the analyzedTweetTexts set
+  newTweets.forEach(tweet => analyzedTweetTexts.add(tweet.id));
 
   const tweetTexts = newTweets.map(tweet => ({ tweet_text: tweet.tweet_text }));
 
@@ -110,36 +136,40 @@ async function analyzeTweets() {
   console.log('Sentiment scores:', sentimentScores);
 
   sentimentScores.forEach(score => {
-    // const tweetElement = tweets.find(tweet => tweet.tweet_text === score.tweet_text).element;
     const tweetData = tweets.find(tweet => tweet.tweet_text === score.tweet_text && !tweet.processed);
     tweetData.processed = true;
     detectedMoods[tweetData.id] = score.detected_mood; // Store the detected mood
 
-    const emoji = score.detected_mood === 'POSITIVE' ? '😊' : score.detected_mood === 'NEGATIVE' ? '☹️' : '😐';
+    if (!tweetData.current_emoji) {
+      const emoji = score.detected_mood === 'POSITIVE' ? '😊' : score.detected_mood === 'NEGATIVE' ? '☹️' : '😐';
 
-    // Find the parent element with data-testid="cellInnerDiv"
-    let parentElement = tweetData.element.parentElement;
-    while (parentElement && parentElement.getAttribute('data-testid') !== 'cellInnerDiv') {
-      parentElement = parentElement.parentElement;
-    }
-
-    if (parentElement) {
-      // Find the time element within the parent element
-      const dateElement = parentElement.querySelector('time');
-
-      if (dateElement) {
-        const separator = document.createTextNode(' · ');
-        const moodElement = document.createElement('span');
-        moodElement.textContent = `Detected Mood: ${emoji}`;
-
-        dateElement.parentNode.insertBefore(separator, dateElement.nextSibling);
-        dateElement.parentNode.insertBefore(moodElement, separator.nextSibling);
-      } else {
-        console.error('Could not find date element for the tweet:', tweetElement);
+      // Find the parent element with data-testid="cellInnerDiv"
+      let parentElement = tweetData.element.parentElement;
+      while (parentElement && parentElement.getAttribute('data-testid') !== 'cellInnerDiv') {
+        parentElement = parentElement.parentElement;
       }
-    } else {
-      console.error('Could not find parent element with data-testid="cellInnerDiv" for the tweet:', tweetElement);
+
+      if (parentElement) {
+        // Find the time element within the parent element
+        const dateElement = parentElement.querySelector('time');
+
+        if (dateElement) {
+          const separator = document.createTextNode(' · ');
+          const moodElement = document.createElement('span');
+          moodElement.textContent = `Detected Mood: ${emoji}`;
+          moodElement.setAttribute('data-unique-emoji-id', tweetData.id); // Add a unique attribute to the emoji element
+
+          dateElement.parentNode.insertBefore(separator, dateElement.nextSibling);
+          dateElement.parentNode.insertBefore(moodElement, separator.nextSibling);
+        } else {
+          console.error('Could not find date element for the tweet:', tweetData.element);
+        }
+      } else {
+        console.error('Could not find parent element with data-testid="cellInnerDiv" for the tweet:', tweetData.element);
+      }
     }
+
+
   });
 }
 
