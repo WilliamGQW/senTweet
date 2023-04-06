@@ -6,14 +6,9 @@
 
  
 # Technologies used
-<!-- [![My Skills](https://skillicons.dev/icons?i=py,flask,react,js,html,mysql,mongodb&perline=10)](https://skillicons.dev) -->
+JavaScript, Python, Flask, AWS, Postman, HTML, CSS 
 
-- ![](https://skillicons.dev/icons?i=js&perline=10) JavaScript
-- ![](https://skillicons.dev/icons?i=py&perline=10) Python
-- ![](https://skillicons.dev/icons?i=aws&perline=10) AWS
-- ![](https://skillicons.dev/icons?i=html&perline=10) HTML
-- ![](https://skillicons.dev/icons?i=css&perline=10) CSS
-- ![](https://skillicons.dev/icons?i=postman&perline=10) Postman
+[![My Skills](https://skillicons.dev/icons?i=js,py,flask,aws,postman,html,css&perline=10)](https://skillicons.dev)
 
 # How to install and use this extension?
 1. download source code of the **chrome-extension** folder to your machine. You don't need the whole repo to make it work.
