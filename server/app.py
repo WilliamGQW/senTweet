@@ -2,9 +2,6 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from langdetect import detect
 from textblob import TextBlob
-import langid
-import tweepy
-import os
 
 app = Flask(__name__)
 CORS(app)

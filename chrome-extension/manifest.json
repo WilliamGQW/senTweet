@@ -5,9 +5,9 @@
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
-      "16": "openai-16.png",
-      "48": "openai-48.png",
-      "128": "openai-128.png"
+      "16": "./icons/icon-16.png",
+      "48": "./icons/icon-48.png",
+      "128": "./icons/icon-128.png"
     }
   },
   "permissions": [
@@ -21,9 +21,9 @@
     "matches": ["https://twitter.com/*"]
   },
   "icons": {
-    "16": "openai-16.png",
-    "48": "openai-48.png",
-    "128": "openai-128.png"
+    "16": "./icons/icon-16.png",
+    "48": "./icons/icon-48.png",
+    "128": "./icons/icon-128.png"
   },
   "background": {
     "service_worker": "background.js"
@@ -38,7 +38,7 @@
   ],
   "web_accessible_resources": [
     {
-        "resources": ["button.svg"],
+        "resources": ["./icons/button.svg"],
         "matches": ["https://twitter.com/*"]
     }
 ]

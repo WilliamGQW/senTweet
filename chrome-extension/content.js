@@ -14,7 +14,6 @@ async function fetchLanguageDetection(tweets) {
         body: tweets
       },
       response => {
-        // console.log('fetchLanguageDetection response:', response);
         if (response.error) {
           reject(response.error);
         } else {
@@ -48,30 +47,6 @@ async function fetchSentimentScore(englishTweets) {
   });
 }
 
-
-// function extractTweets() {
-//   const tweetElements = document.querySelectorAll('[data-testid="tweetText"]');
-//   console.log(`tweetElements.length: ${tweetElements.length}`);
-
-
-//   const tweets = [];
-
-//   tweetElements.forEach(tweet => {
-//     if (tweet) {
-//       const tweetId = tweet.getAttribute('data-unique-id');
-
-//       if (tweetId) {
-//         tweets.push({ tweet_text: tweet.textContent, element: tweet, id: tweetId, detected_mood: detectedMoods[tweetId] });
-//       } else {
-//         const newTweetId = `tweet_${Date.now()}_${Math.random().toString(7)}`;
-//         tweet.setAttribute('data-unique-id', newTweetId);
-//         tweets.push({ tweet_text: tweet.textContent, element: tweet, id: newTweetId });
-//       }
-//     }
-//   });
-
-//   return tweets;
-// }
 
 function extractTweets() {
   const tweetElements = document.querySelectorAll('[data-testid="tweetText"]');
@@ -172,33 +147,6 @@ async function analyzeTweets() {
 
   });
 }
-
-
-// function observeTweets(callback) {
-//   const tweetElements = document.querySelectorAll('[data-testid="tweetText"]');
-//   const options = {
-//     root: null,
-//     rootMargin: '0px',
-//     threshold: 0
-//   };
-
-//   const observer = new IntersectionObserver((entries, observer) => {
-//     entries.forEach(entry => {
-//       if (entry.isIntersecting) {
-//         callback();
-//       }
-//     });
-//   }, options);
-
-//   tweetElements.forEach(tweet => {
-//     observer.observe(tweet);
-//   });
-// }
-
-// function onContentLoaded() {
-//   setTimeout(analyzeTweets, 3000); // Wait for 3 seconds before running analyzeTweets
-//   observeTweets(analyzeTweets);
-// }
 
 function handleScroll(callback) {
   let timer;
