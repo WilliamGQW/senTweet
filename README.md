@@ -25,3 +25,4 @@
 # Note
 1. Tweets have no timestamp will not have a sentiment emoji becauese the emojis are supposed add to time stamps. Will change this in future.
 2. Tweets with retweets may have two generated emojis.
+3. Let me know if this extension is down, it's probably due to the AWS api issue.
