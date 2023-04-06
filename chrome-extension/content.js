@@ -52,6 +52,7 @@ async function fetchSentimentScore(englishTweets) {
 function extractTweets() {
   const tweetElements = document.querySelectorAll('[data-testid="tweetText"]');
   console.log(`tweetElements.length: ${tweetElements.length}`);
+  
 
   const tweets = [];
 
@@ -77,6 +78,7 @@ const detectedMoods = {}; // create an object to store the detected moods:
 
 async function analyzeTweets() {
   const tweets = extractTweets();
+  console.log('Tweets:', tweets);
 
   // If no tweets are found, try again after a short delay
   if (tweets.length === 0) {
@@ -86,7 +88,7 @@ async function analyzeTweets() {
 
   // Filter out tweets that have already been analyzed
   const newTweets = tweets.filter(tweet => !analyzedTweetTexts.has(tweet.tweet_text));
-
+  console.log('New tweets:', newTweets);
   // Add new tweet texts to the analyzedTweetTexts set
   newTweets.forEach(tweet => analyzedTweetTexts.add(tweet.tweet_text));
 
@@ -96,6 +98,8 @@ async function analyzeTweets() {
   console.log(`extracted Tweets: ${tweetTexts}`);
 
   const languageDetectionResults = await fetchLanguageDetection(tweetTexts);
+  console.log('Language detection results:', languageDetectionResults);
+
   const englishTweets = languageDetectionResults
     .filter(result => result.is_english)
     .map(result => ({ tweet_text: result.tweet_text }));
@@ -103,6 +107,7 @@ async function analyzeTweets() {
   console.log(`There are ${englishTweets.length} english tweets among ${languageDetectionResults.length} all tweets.`);
 
   const sentimentScores = await fetchSentimentScore(englishTweets);
+  console.log('Sentiment scores:', sentimentScores);
 
   sentimentScores.forEach(score => {
     // const tweetElement = tweets.find(tweet => tweet.tweet_text === score.tweet_text).element;
@@ -140,42 +145,77 @@ async function analyzeTweets() {
 
 
 // function observeTweets(callback) {
-//   const mainContentElement = document.querySelector('div[data-testid="primaryColumn"]');
+//   const tweetElements = document.querySelectorAll('[data-testid="tweetText"]');
+//   const options = {
+//     root: null,
+//     rootMargin: '0px',
+//     threshold: 0
+//   };
 
-//   if (mainContentElement) {
-//     const observer = new MutationObserver((mutations) => {
-//       mutations.forEach((mutation) => {
-//         if (mutation.type === 'childList') {
-//           // Add a delay before calling the callback to give Twitter time to load new content
-//           setTimeout(callback, 3000);
-//         }
-//       });
+//   const observer = new IntersectionObserver((entries, observer) => {
+//     entries.forEach(entry => {
+//       if (entry.isIntersecting) {
+//         callback();
+//       }
 //     });
+//   }, options);
 
-//     observer.observe(mainContentElement, { childList: true, subtree: true });
-//   } else {
-//     console.error('Could not find main content element to observe');
-//   }
+//   tweetElements.forEach(tweet => {
+//     observer.observe(tweet);
+//   });
 // }
 
-let lastAnalyzedTweetCount = 0;
+// function onContentLoaded() {
+//   setTimeout(analyzeTweets, 3000); // Wait for 3 seconds before running analyzeTweets
+//   observeTweets(analyzeTweets);
+// }
 
-function checkForNewTweets() {
-  const currentTweetCount = document.querySelectorAll('[data-testid="tweetText"]').length;
+function handleScroll(callback) {
+  let timer;
+  const delay = 1000; // You can adjust the delay value as needed
 
-  if (currentTweetCount > lastAnalyzedTweetCount) {
-    lastAnalyzedTweetCount = currentTweetCount;
-    analyzeTweets();
-  }
-
-  setTimeout(checkForNewTweets, 3000); // Check for new tweets every 3 seconds
+  window.addEventListener('scroll', () => {
+    clearTimeout(timer);
+    timer = setTimeout(callback, delay);
+  });
 }
 
-function onContentLoaded() {
-  setTimeout(analyzeTweets, 2800); // Wait for 3 seconds before running analyzeTweets
-  // observeTweets(analyzeTweets);
-  checkForNewTweets();
+function observeTweets(callback) {
+  const mainContentElement = document.querySelector('div[data-testid="primaryColumn"]');
 
+  if (mainContentElement) {
+    const observer = new MutationObserver((mutations) => {
+      let shouldAnalyzeTweets = false;
+
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'childList') {
+          shouldAnalyzeTweets = true;
+        }
+      });
+
+      if (shouldAnalyzeTweets) {
+        setTimeout(callback, 1000); // Add a delay before calling the callback to give Twitter time to load new content
+      }
+    });
+
+    observer.observe(mainContentElement, { childList: true, subtree: true });
+
+    // Handle scroll events
+    window.addEventListener('scroll', () => {
+      clearTimeout(observer.scrollTimeout);
+      observer.scrollTimeout = setTimeout(callback, 1000);
+    });
+
+  } else {
+    console.error('Could not find main content element to observe');
+  }
+}
+
+
+function onContentLoaded() {
+  setTimeout(analyzeTweets, 2500); // Wait for 3 seconds before running analyzeTweets
+  observeTweets(analyzeTweets);
+  handleScroll(analyzeTweets);
 }
 
 if (document.readyState === 'loading') {
